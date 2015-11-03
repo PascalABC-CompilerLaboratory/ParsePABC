@@ -39,6 +39,44 @@ namespace SyntaxVisitors
             }
         }
 
+        public override void visit(if_node ifn)
+        {
+            ProcessNode(ifn.then_body);
+            ProcessNode(ifn.else_body);
+
+            var b = true; // HasStatementVisitor<yield_node>.Has(rn);
+            if (!b)
+                return;
+
+            var gtAfter = goto_statement.New;
+            var lbAfter = new labeled_statement(gtAfter.label);
+
+            if ((object)ifn.else_body == null)
+            {
+                var if0 = new if_node(un_expr.Not(ifn.condition), gtAfter);
+                ReplaceStatement(ifn, SeqStatements(if0, ifn.then_body, lbAfter));
+
+                // в declarations ближайшего блока добавить описание labels
+                block bl = listNodes.FindLast(x => x is block) as block;
+
+                bl.defs.Add(new label_definitions(gtAfter.label));
+            }
+            else
+            {
+                var gtAlt = goto_statement.New;
+                var lbAlt = new labeled_statement(gtAlt.label, ifn.else_body);
+
+                var if0 = new if_node(un_expr.Not(ifn.condition), gtAlt);
+
+                ReplaceStatement(ifn, SeqStatements(if0, ifn.then_body, gtAfter, lbAlt, lbAfter));
+
+                // в declarations ближайшего блока добавить описание labels
+                block bl = listNodes.FindLast(x => x is block) as block;
+
+                bl.defs.Add(new label_definitions(gtAfter.label, gtAlt.label));
+            }
+        }
+
         public override void visit(repeat_node rn)
         {
             ProcessNode(rn.statements);
