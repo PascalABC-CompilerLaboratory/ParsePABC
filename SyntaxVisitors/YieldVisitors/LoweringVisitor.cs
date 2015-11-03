@@ -39,6 +39,32 @@ namespace SyntaxVisitors
             }
         }
 
+        public override void visit(repeat_node rn)
+        {
+            ProcessNode(rn.statements);
+
+            var b = true; // HasStatementVisitor<yield_node>.Has(rn);
+            if (!b)
+                return;
+
+            var gtContinue = goto_statement.New;
+            var gtBreak = goto_statement.New;
+
+            var lbContinue = new labeled_statement(gtContinue.label, rn.statements);
+            var lbBreak = new labeled_statement(gtBreak.label);
+
+            var if0 = new if_node(un_expr.Not(rn.expr), gtContinue);
+
+
+            ReplaceStatement(rn, SeqStatements(lbContinue, if0, lbBreak));
+
+            // в declarations ближайшего блока добавить описание labels
+            block bl = listNodes.FindLast(x => x is block) as block;
+
+            bl.defs.Add(new label_definitions(gtContinue.label, gtBreak.label));
+
+        }
+
         public override void visit(while_node wn)
         {
             ProcessNode(wn.statements);
@@ -51,8 +77,8 @@ namespace SyntaxVisitors
             var gt2 = goto_statement.New;
 
             var if0 = new if_node(un_expr.Not(wn.expr), gt1);
-            var lb2 = new labeled_statement(gt2.label, if0);
-            var lb1 = new labeled_statement(gt1.label);
+            var lb2 = new labeled_statement(gt2.label, if0); // continue
+            var lb1 = new labeled_statement(gt1.label); // break
 
             ReplaceStatement(wn, SeqStatements(lb2, wn.statements, gt2, lb1));
 

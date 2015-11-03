@@ -18,6 +18,12 @@ namespace ParsePABC1
         static syntax_tree_node ParseFile(string fname)
         {
             Compiler c = new Compiler();
+            c.SyntaxTreeChanger = new TestSyntaxTreeChanger();
+            var opts = new CompilerOptions(fname, CompilerOptions.OutputType.ConsoleApplicaton);
+            
+            //opts.GenerateCode = true;
+            var res = c.Compile(opts);
+            
 
             var err = new List<Error>();
 
@@ -34,15 +40,15 @@ namespace ParsePABC1
 
         static void Main(string[] args)
         {
-            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\pascalabcnet\_ParsePABC1\yield1.pas");
+            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\_ParsePABC1\r.pas");
             if (cu == null)
                 return;
 
             //CodeFormatters.CodeFormatter cf = new CodeFormatters.CodeFormatter(0);
             //txt = cf.FormatTree(txt, cu as compilation_unit, 0, 0);
 
-            cu.visit(new ChangeWhileVisitor());
-            cu.visit(new DeleteRedundantBeginEnds());
+            //cu.visit(new ChangeWhileVisitor());
+            //cu.visit(new DeleteRedundantBeginEnds());
 
             /*cu.visit(new CollectUpperNamespacesVisitor());
 
@@ -54,10 +60,10 @@ namespace ParsePABC1
             cu.visit(cnt);
             cnt.PrintSortedByValue();*/
 
-            var ld = new HashSet<string>();
+            /*var ld = new HashSet<string>();
             ld.Add("p1");
             var dld = new DeleteLocalDefs(ld);
-            cu.visit(dld);
+            cu.visit(dld);*/
 
             cu.visit(new SimplePrettyPrinterVisitor());
 

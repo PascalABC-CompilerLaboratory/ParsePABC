@@ -37,9 +37,25 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\dlls\Compiler.dll</HintPath>
     </Reference>
+    <Reference Include="CompilerTools, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pascalabcnet\_ParsePABC1\dlls\CompilerTools.dll</HintPath>
+    </Reference>
     <Reference Include="Errors, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\dlls\Errors.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory, Version=4.2.1.8805, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pascalabcnet\_ParsePABC1\dlls\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="Localization, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pascalabcnet\_ParsePABC1\dlls\Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="NETGenerator, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pascalabcnet\_ParsePABC1\dlls\NETGenerator.dll</HintPath>
     </Reference>
     <Reference Include="ParserTools, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -47,6 +63,10 @@
     </Reference>
     <Reference Include="PascalABCParser">
       <HintPath>..\dlls\PascalABCParser.dll</HintPath>
+    </Reference>
+    <Reference Include="SemanticTree, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pascalabcnet\_ParsePABC1\dlls\SemanticTree.dll</HintPath>
     </Reference>
     <Reference Include="SyntaxTree, Version=3.0.0.1052, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -64,6 +84,7 @@
   <ItemGroup>
     <Compile Include="ProgramOld.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestSyntaxTreeChanger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

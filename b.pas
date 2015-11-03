@@ -1,4 +1,6 @@
 begin
+  var x, y: integer;
+
   while True do
   begin
     x := 3; 
