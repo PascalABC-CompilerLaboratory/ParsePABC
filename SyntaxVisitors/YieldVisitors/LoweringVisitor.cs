@@ -44,7 +44,7 @@ namespace SyntaxVisitors
             ProcessNode(ifn.then_body);
             ProcessNode(ifn.else_body);
 
-            var b = true; // HasStatementVisitor<yield_node>.Has(rn);
+            var b = HasStatementVisitor<yield_node>.Has(ifn);
             if (!b)
                 return;
 
@@ -81,7 +81,7 @@ namespace SyntaxVisitors
         {
             ProcessNode(rn.statements);
 
-            var b = true; // HasStatementVisitor<yield_node>.Has(rn);
+            var b = HasStatementVisitor<yield_node>.Has(rn);
             if (!b)
                 return;
 
@@ -106,7 +106,7 @@ namespace SyntaxVisitors
         public override void visit(while_node wn)
         {
             ProcessNode(wn.statements);
-            // Я Починиль
+
             var b = HasStatementVisitor<yield_node>.Has(wn);
             if (!b)
                 return;
@@ -129,8 +129,8 @@ namespace SyntaxVisitors
         public override void visit(for_node fn)
         {
             ProcessNode(fn.statements);
-            // Я Починиль
-            var b = true; //HasStatementVisitor<yield_node>.Has(fn);
+
+            var b = HasStatementVisitor<yield_node>.Has(fn);
             if (!b)
                 return;
 

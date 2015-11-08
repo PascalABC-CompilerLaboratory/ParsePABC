@@ -73,6 +73,7 @@
     <Compile Include="YieldVisitors\DeleteLocalDefs.cs" />
     <Compile Include="YieldVisitors\LoweringVisitor.cs" />
     <Compile Include="YieldVisitors\ProcessYieldsCapturedVars.cs" />
+    <Compile Include="YieldVisitors\ReplaceFormalParametersRefsVisitor.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
