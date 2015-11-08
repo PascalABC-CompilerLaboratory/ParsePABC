@@ -47,6 +47,10 @@ namespace ParsePABC1
             var refsReplacer = new ReplaceFormalParametersRefsVisitor();
             cu.visit(refsReplacer);
 
+
+            var yieldVis = new ProcessYieldCapturedVarsVisitor();
+            cu.visit(yieldVis);
+
             //CodeFormatters.CodeFormatter cf = new CodeFormatters.CodeFormatter(0);
             //txt = cf.FormatTree(txt, cu as compilation_unit, 0, 0);
 

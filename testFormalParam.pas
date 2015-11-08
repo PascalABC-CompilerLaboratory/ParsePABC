@@ -1,8 +1,7 @@
 function pp(test_field: integer): integer;
-	  function ppp(ttt: integer): integer;
+	  function ppp: integer;
 	  begin
 		  test_field += 2;
-		  ttt *= 3
 	  end;
 begin
     //var x := self.test_field;

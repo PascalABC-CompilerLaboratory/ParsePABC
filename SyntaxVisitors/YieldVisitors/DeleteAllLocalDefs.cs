@@ -12,6 +12,7 @@ namespace SyntaxVisitors
     public class DeleteAllLocalDefs : BaseChangeVisitor
     {
         public List<var_def_statement> LocalDeletedDefs = new List<var_def_statement>(); // все локальные описания
+
         public HashSet<string> LocalDeletedDefsNames = new HashSet<string>();            // их имена - для быстрого поиска  
 
         public DeleteAllLocalDefs() // надо запускать этот визитор начиная с корня подпрограммы

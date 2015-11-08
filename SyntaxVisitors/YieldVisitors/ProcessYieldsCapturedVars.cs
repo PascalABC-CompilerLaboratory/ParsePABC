@@ -19,6 +19,16 @@ namespace SyntaxVisitors
         public static string State = "<>state";
     }
 
+    public static class HoistParametersHelper
+    {
+        public static int CurrentParameterNum = 1;
+
+        public static string MakeHoistedFormalParameterName(string formalParamName)
+        {
+            return string.Format("<>{0}__{1}", ++CurrentParameterNum, formalParamName);
+        }
+    }
+
     public class ProcessYieldCapturedVarsVisitor : BaseChangeVisitor 
     {
         int clnum = 0;
