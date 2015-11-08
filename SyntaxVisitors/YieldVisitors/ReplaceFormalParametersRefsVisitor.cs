@@ -11,7 +11,7 @@ namespace SyntaxVisitors
 {
     public class ReplaceFormalParametersRefsVisitor : BaseChangeVisitor
     {
-        public HashSet<string> CollectedFormalParameters = new HashSet<string>();
+        public Dictionary<string, type_definition> CollectedFormalParameters = new Dictionary<string, type_definition>();
 
         // Типа-стек соответствий paramName -> <>num__paramName для разных уровней вложенности методов
         private List<Dictionary<string, string>> formalParametersStack = new List<Dictionary<string, string>>();
@@ -40,7 +40,7 @@ namespace SyntaxVisitors
                     formalParametersStack[currentLevel].Add(paramName, hoistedParamName);
 
                     // Захват
-                    CollectedFormalParameters.Add(hoistedParamName);
+                    CollectedFormalParameters.Add(hoistedParamName, plist.vars_type);
                 }
             }
 
@@ -67,6 +67,11 @@ namespace SyntaxVisitors
                 }
             }
 
+            bool isField = false;
+
+            // Локальные параметры обрабатываются в другом визиторе
+
+            // Параметр функции
             if ((object)paramNameLevel != null)
             {
                 var upper = UpperNode();
@@ -86,7 +91,14 @@ namespace SyntaxVisitors
 
                     Replace(id, selfId);
                 }
+                // Иначе проверить что это поле класса! self.paramName или какой-то другой очень извращенный вариант вроде (someMethod: self).paramName
             }
+
+            // Поле класса
+
+            // Параметр внешней функции (если наша - вложенная)
+
+            // Глобальная переменная
         }
 
     }
