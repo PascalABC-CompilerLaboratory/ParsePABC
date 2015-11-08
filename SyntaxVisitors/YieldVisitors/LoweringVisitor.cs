@@ -107,7 +107,7 @@ namespace SyntaxVisitors
         {
             ProcessNode(wn.statements);
             // Я Починиль
-            var b = true; // HasStatementVisitor<yield_node>.Has(wn);
+            var b = HasStatementVisitor<yield_node>.Has(wn);
             if (!b)
                 return;
 
