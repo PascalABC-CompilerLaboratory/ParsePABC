@@ -20,6 +20,9 @@ namespace SyntaxVisitors
         {
         }
 
+        // Лучше запретить yield в вложенных функциях и в функциях со вложенными!
+        // Запретить-запретить-запретить
+
         public override void visit(procedure_definition pd)
         {
             if ((object)pd.proc_header.parameters == null)
@@ -48,6 +51,8 @@ namespace SyntaxVisitors
 
             formalParametersStack.RemoveAt(currentLevel);
         }
+
+        
 
 
         public override void visit(ident id)

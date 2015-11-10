@@ -15,17 +15,26 @@ namespace SyntaxVisitors
 {
     public static class Consts
     {
-        public static string Current = "<>current";
-        public static string State = "<>state";
+        public static string Current = "<>2__current";
+        public static string State = "<>1__state";
+
+        public static string Self = "<>4__self";
+
+        public enum ReservedNum { StateField = 1, CurrentField = 2, MethodFormalParam = 3, MethodSelf = 4, MethodLocalVariable = 5 }
     }
 
     public static class HoistParametersHelper
     {
-        public static int CurrentParameterNum = 1;
+        public static int CurrentLocalVariableNum = 0;
 
         public static string MakeHoistedFormalParameterName(string formalParamName)
         {
-            return string.Format("<>{0}__{1}", ++CurrentParameterNum, formalParamName);
+            return string.Format("<>{0}__{1}", Consts.ReservedNum.MethodFormalParam, formalParamName);
+        }
+
+        public static string MakeHoistedLocalVariableName(string variableName)
+        {
+            return string.Format("<{0}>{1}__{2}", variableName, Consts.ReservedNum.MethodLocalVariable, ++CurrentLocalVariableNum);
         }
     }
 
