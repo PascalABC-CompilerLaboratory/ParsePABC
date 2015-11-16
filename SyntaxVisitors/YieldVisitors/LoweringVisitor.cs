@@ -35,7 +35,7 @@ namespace SyntaxVisitors
             base.Enter(st);
             if (!(st is procedure_definition || st is block || st is statement_list || st is case_node || st is for_node || st is foreach_stmt || st is if_node || st is repeat_node || st is while_node || st is with_statement || st is try_stmt || st is lock_stmt))
             {
-                visitNode = false;
+                //visitNode = false;
             }
         }
 
@@ -130,7 +130,7 @@ namespace SyntaxVisitors
         {
             ProcessNode(fn.statements);
 
-            var b = HasStatementVisitor<yield_node>.Has(fn);
+            var b = true; //HasStatementVisitor<yield_node>.Has(fn);
             if (!b)
                 return;
 
@@ -142,10 +142,16 @@ namespace SyntaxVisitors
             var ass2 = new var_statement(endtemp, fn.type_name, fn.finish_value);
 
 
-            var if0 = new if_node(bin_expr.Greater(fn.loop_variable, fn.finish_value), gt1);
+
+            var if0 = new if_node((fn.cycle_type == for_cycle_type.to) ?
+                bin_expr.Greater(fn.loop_variable, fn.finish_value) :
+                bin_expr.Less(fn.loop_variable, fn.finish_value), gt1);
+
             var lb2 = new labeled_statement(gt2.label, if0);
             var lb1 = new labeled_statement(gt1.label);
-            var Inc = new procedure_call(new method_call(new ident("Inc"),new expression_list(fn.loop_variable)));
+            var Inc = new procedure_call(new method_call((fn.cycle_type == for_cycle_type.to) ?
+                new ident("Inc") : 
+                new ident("Dec"), new expression_list(fn.loop_variable)));
 
             ReplaceStatement(fn, SeqStatements(ass1,ass2,lb2, fn.statements, Inc, gt2, lb1));
 

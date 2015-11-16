@@ -16,6 +16,9 @@ namespace SyntaxVisitors
         // Типа-стек соответствий paramName -> <>num__paramName для разных уровней вложенности методов
         private List<Dictionary<string, string>> formalParametersStack = new List<Dictionary<string, string>>();
 
+        private bool _isClassMethod = false;
+
+
         public ReplaceFormalParametersRefsVisitor()
         {
         }
@@ -25,11 +28,14 @@ namespace SyntaxVisitors
 
         public override void visit(procedure_definition pd)
         {
+           // var u = UpperNode(3);
+            // В случае отсутствия формальных параметров
             if ((object)pd.proc_header.parameters == null)
             {
                 base.visit(pd.proc_body);
                 return;
             }
+
             formalParametersStack.Add(new Dictionary<string, string>());
             int currentLevel = formalParametersStack.Count - 1;
 

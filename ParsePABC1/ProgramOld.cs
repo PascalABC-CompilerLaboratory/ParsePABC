@@ -40,13 +40,15 @@ namespace ParsePABC1
 
         static void Main(string[] args)
         {
-            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\_ParsePABC1\testFormalParam.pas");
+            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\_ParsePABC1\testFor.pas");
             if (cu == null)
                 return;
 
-            var refsReplacer = new ReplaceFormalParametersRefsVisitor();
-            cu.visit(refsReplacer);
+            //var refsReplacer = new ReplaceFormalParametersRefsVisitor();
+            //cu.visit(refsReplacer);
 
+            var lowVis = new LoweringVisitor();
+            cu.visit(lowVis);
 
             var yieldVis = new ProcessYieldCapturedVarsVisitor();
             cu.visit(yieldVis);

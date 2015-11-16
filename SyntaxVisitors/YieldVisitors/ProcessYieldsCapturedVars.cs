@@ -169,6 +169,10 @@ namespace SyntaxVisitors
             if (!hasYields) // т.е. мы разобрали функцию и уже выходим. Это значит, что пока yield будет обрабатываться только в функциях. Так это и надо.
                 return;
 
+            LoweringVisitor.Accept(pd);
+
+            // frninja 16/11/15: перенес ниже чтобы работал захват для lowered for
+
             var dld = new DeleteAllLocalDefs(); // mids.vars - все захваченные переменные
             pd.visit(dld); // Удалить в локальных и блочных описаниях этой процедуры все переменные и вынести их в отдельный список var_def_statement
 
@@ -177,9 +181,6 @@ namespace SyntaxVisitors
 
             // Обработать параметры! 
             // Как? Ищем в mids formal_parametrs, но надо выделить именно обращение к параметрам - не полям класса, не глобальным переменным
-            // Плохой случай: параметр функции перекрывается с полем класса! че делать?
-
-            LoweringVisitor.Accept(pd);
 
             var cfa = new ConstructFiniteAutomata((pd.proc_body as block).program_code);
             cfa.Transform();
