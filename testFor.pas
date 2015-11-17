@@ -1,6 +1,10 @@
+var i: integer;
+
 function Gen: sequence of integer;
 begin
   for var i := 10 downto 1 do
+    yield i;
+  for var i := 2 to 5 do
     yield i;
 end; 
 

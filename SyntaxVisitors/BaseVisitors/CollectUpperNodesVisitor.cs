@@ -23,6 +23,8 @@ namespace SyntaxVisitors
 
         public syntax_tree_node UpperNode(int up = 1)
         {
+            if (listNodes.Count - 1 - up < 0)
+                return null;
             return listNodes[listNodes.Count - 1 - up];
         }
 

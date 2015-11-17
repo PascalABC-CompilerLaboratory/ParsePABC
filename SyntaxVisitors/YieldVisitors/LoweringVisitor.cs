@@ -10,19 +10,45 @@ using PascalABCCompiler.SyntaxTree;
 
 namespace SyntaxVisitors
 {
+    public class VarNames
+    {
+        public string VarName { get; set; }
+        public string VarEndName { get; set; }
+
+        public VarNames()
+        {
+        }
+
+        public VarNames(string varName, string varEndName)
+        {
+            VarName = varName;
+            VarEndName = varEndName;
+        }
+    }
+
     public class LoweringVisitor : BaseChangeVisitor
     {
         public static LoweringVisitor New
         {
-            get { return new LoweringVisitor();  }
+            get { return new LoweringVisitor(); }
         }
 
-        int varnum = 0;
+        private int _varnum = 0;
 
-        public string newVarName()
+        private string newVarName()
         {
-            varnum++;
-            return "<>varLV" + varnum.ToString();
+            _varnum++;
+            return "<>varLV" + _varnum.ToString();
+        }
+
+        private VarNames NewVarNames(ident name)
+        {
+            _varnum++;
+            return new VarNames()
+            {
+                VarName = name.name + _varnum,
+                VarEndName = "<>varLV" + _varnum
+            };
         }
 
         public static void Accept(procedure_definition pd)
@@ -137,7 +163,19 @@ namespace SyntaxVisitors
             var gt1 = goto_statement.New;
             var gt2 = goto_statement.New;
 
-            var endtemp = new ident(newVarName());
+            var newNames = this.NewVarNames(fn.loop_variable);
+
+            var newLoopVar = fn.create_loop_variable ? new ident(newNames.VarName) : fn.loop_variable;
+
+            // Нужно заменить fn.loop_variable -> newLoopVar в теле цикла
+            var replacerVis = new ReplaceForVariableVisitor(fn.loop_variable, newLoopVar);
+            fn.visit(replacerVis);
+
+            fn.loop_variable = newLoopVar;
+
+            var endtemp = new ident(newNames.VarEndName); //new ident(newVarName());
+
+            //var ass1 = new var_statement(fn.loop_variable, fn.type_name, fn.initial_value);
             var ass1 = new var_statement(fn.loop_variable, fn.type_name, fn.initial_value);
             var ass2 = new var_statement(endtemp, fn.type_name, fn.finish_value);
 
@@ -150,10 +188,10 @@ namespace SyntaxVisitors
             var lb2 = new labeled_statement(gt2.label, if0);
             var lb1 = new labeled_statement(gt1.label);
             var Inc = new procedure_call(new method_call((fn.cycle_type == for_cycle_type.to) ?
-                new ident("Inc") : 
+                new ident("Inc") :
                 new ident("Dec"), new expression_list(fn.loop_variable)));
 
-            ReplaceStatement(fn, SeqStatements(ass1,ass2,lb2, fn.statements, Inc, gt2, lb1));
+            ReplaceStatement(fn, SeqStatements(ass1, ass2, lb2, fn.statements, Inc, gt2, lb1));
 
             // в declarations ближайшего блока добавить описание labels
             block bl = listNodes.FindLast(x => x is block) as block;
