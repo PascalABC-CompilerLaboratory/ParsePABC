@@ -61,7 +61,7 @@ namespace SyntaxVisitors
             base.Enter(st);
             if (!(st is procedure_definition || st is block || st is statement_list || st is case_node || st is for_node || st is foreach_stmt || st is if_node || st is repeat_node || st is while_node || st is with_statement || st is try_stmt || st is lock_stmt))
             {
-                visitNode = false;
+                //visitNode = false;
             }
         }
 
@@ -70,7 +70,7 @@ namespace SyntaxVisitors
             ProcessNode(ifn.then_body);
             ProcessNode(ifn.else_body);
 
-            var b = HasStatementVisitor<yield_node>.Has(ifn);
+            var b = true;//HasStatementVisitor<yield_node>.Has(ifn);
             if (!b)
                 return;
 

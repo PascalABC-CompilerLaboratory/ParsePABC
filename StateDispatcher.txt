@@ -1,0 +1,32 @@
+1. В обработке yield expression:
+
+  Создать состояние next_state
+  this.current = expression
+  this.state = <next_state>
+  return true;
+
+  <next_state_label>: ;
+  this.state = finalizeState;
+2. В диспетчере switch:
+  state -> goto state_label;
+
+В начале функции switch по состояниям: 
+	case { goto state_N }
+
+
+Нужно организовать диспетчеризацию состояний к меткам, содержащим yield.
+Видим yield - создали новое состояние.
+Куда кидать метку?
+
+Если yield внутри labeled_statement (lowered if, for, repeat, while etc) - 
+	к ближайшему родительскому labeled_statement
+Иначе - вопрос
+
+Предположим чистый yield - засунуть внутрь case ?
+Ок.
+
+Храним отображение из state -> label
+Храним currentLabeledStatementLabel, что делать в случае вложенности?
+После process восстанавливать?
+
+Перед goto на state в switch переключить state в -1 (not started)

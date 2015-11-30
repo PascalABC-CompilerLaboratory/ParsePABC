@@ -221,9 +221,17 @@ namespace SyntaxVisitors
 
         case_node cas; // формируемый case
 
+        private Dictionary<labeled_statement, List<int>> _dispatches = new Dictionary<labeled_statement, List<int>>();
+
         public ConstructFiniteAutomata(statement_list stl)
         {
             this.stl = stl;
+        }
+
+        private void AddState(out int stateNumber, out ident resumeLabel)
+        {
+            stateNumber = curState++;
+            resumeLabel = null;
         }
 
         public void Process(statement st)
