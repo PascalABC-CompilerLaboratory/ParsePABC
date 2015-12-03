@@ -76,6 +76,16 @@ namespace SyntaxVisitors
             }
         }
 
+        /*public override void visit(class_members cm)
+        {
+            foreach (var decl in cm.members)
+            {
+                if (decl is procedure_header || decl is procedure_definition)
+                    decl.visit(this);
+            }
+            base.visit(cm);
+        }*/
+
         type_declarations GenClassesForYield(procedure_definition pd, IEnumerable<var_def_statement> fields)
         {
             var fh = (pd.proc_header as function_header);
@@ -160,6 +170,18 @@ namespace SyntaxVisitors
 
         public override void visit(procedure_definition pd)
         {
+            // frninja
+            // DEBUG for test 
+            // SORRY
+            if ((object)pd.proc_header.name.class_name != null)
+            {
+                // Объявление вне класса
+                CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(pd.proc_header.name.class_name);
+                var cu = UpperTo<block>();
+                cu.visit(fieldsVis);
+                Console.WriteLine(fieldsVis.CollectedFields);
+            }
+
             hasYields = false;
             if (pd.proc_header is function_header)
                 mids = new FindMainIdentsVisitor();

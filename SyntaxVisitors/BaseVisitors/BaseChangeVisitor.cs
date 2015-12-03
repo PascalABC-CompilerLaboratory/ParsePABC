@@ -40,6 +40,22 @@ namespace SyntaxVisitors
             return stl;
         }
 
+        public T UpperTo<T>() where T : syntax_tree_node
+        {
+            syntax_tree_node upperNode = null;
+
+            int up = 1;
+
+            do
+            {
+                upperNode = UpperNode(up);
+                ++up;
+            } 
+            while ((object)upperNode != null && !(upperNode is T));
+
+            return (object)upperNode != null ? upperNode as T : null;
+        }
+
         public bool DeleteInIdentList(ident id)
         {
             var idl = UpperNodeAs<ident_list>();
