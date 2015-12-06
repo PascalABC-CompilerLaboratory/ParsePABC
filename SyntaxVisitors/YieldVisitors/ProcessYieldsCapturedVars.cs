@@ -192,7 +192,7 @@ namespace SyntaxVisitors
             if ((object)className != null)
             {
                 CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(className);
-                var cu = UpperTo<block>();
+                var cu = UpperTo<compilation_unit>();
                 cu.visit(fieldsVis);
                 Console.WriteLine(fieldsVis.CollectedFields);
             }

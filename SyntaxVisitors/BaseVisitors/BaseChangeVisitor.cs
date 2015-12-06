@@ -11,8 +11,16 @@ namespace SyntaxVisitors
 {
     public class BaseChangeVisitor : CollectUpperNodesVisitor
     {
+        private bool _rootAdded = false;
         public override void DefaultVisit(syntax_tree_node n)
         {
+            // frninja 07/12/15
+            if (!_rootAdded)
+            {
+                _rootAdded = true;
+                ProcessNode(n);
+            }
+
             // Элементы списков - с конца в начало чтобы можно было эти элементы изменять по ходу (удалять/вставлять/заменять один несколькими)
             var Сount = n.subnodes_count;
             var СountWithoutListElements = n.subnodes_without_list_elements_count;
