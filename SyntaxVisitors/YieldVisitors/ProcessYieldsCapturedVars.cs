@@ -173,10 +173,25 @@ namespace SyntaxVisitors
             // frninja
             // DEBUG for test 
             // SORRY
+            ident className = null;
             if ((object)pd.proc_header.name.class_name != null)
             {
-                // Объявление вне класса
-                CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(pd.proc_header.name.class_name);
+                // Объявление вне класса его метода
+                className = pd.proc_header.name.class_name;
+            }
+            else
+            {
+                // Объявление функции в классе?
+                var classDef = UpperNode(3);
+                if ((object)classDef != null && classDef is class_definition)
+                {
+                    className = (UpperNode(4) as type_declaration).type_name;
+                }
+            }
+
+            if ((object)className != null)
+            {
+                CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(className);
                 var cu = UpperTo<block>();
                 cu.visit(fieldsVis);
                 Console.WriteLine(fieldsVis.CollectedFields);

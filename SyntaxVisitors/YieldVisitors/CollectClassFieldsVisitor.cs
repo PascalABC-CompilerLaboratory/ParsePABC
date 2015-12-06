@@ -13,7 +13,7 @@ namespace SyntaxVisitors
     {
         private ident _className;
 
-        public ISet<ident> CollectedFields { get; set; }
+        public ISet<ident> CollectedFields { get; private set; }
 
         public CollectClassFieldsVisitor(ident className)
         {
