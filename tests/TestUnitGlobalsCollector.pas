@@ -1,10 +1,10 @@
-unit TestUnitGlobalsCollector;
+//unit TestUnitGlobalsCollector;
 
-interface
+//interface
 var testGlobal: integer;
 
-implementation
-var testGlobalImpl: integer;
+//implementation
+//var testGlobalImpl: integer;
 type A = class
   testField: integer;
 end;

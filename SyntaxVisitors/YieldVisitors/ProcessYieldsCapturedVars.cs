@@ -168,11 +168,8 @@ namespace SyntaxVisitors
             return cct;
         }
 
-        public override void visit(procedure_definition pd)
+        private void CollectClassFieldsNames(procedure_definition pd, ISet<ident> collectedFields)
         {
-            // frninja
-            // DEBUG for test 
-            // SORRY
             ident className = null;
             if ((object)pd.proc_header.name.class_name != null)
             {
@@ -182,10 +179,14 @@ namespace SyntaxVisitors
             else
             {
                 // Объявление функции в классе?
-                var classDef = UpperNode(3);
-                if ((object)classDef != null && classDef is class_definition)
+                var classDef = UpperNode(3) as class_definition;
+                if ((object)(UpperNode(3) as class_definition) != null)
                 {
-                    className = (UpperNode(4) as type_declaration).type_name;
+                    var td = UpperNode(4) as type_declaration;
+                    if ((object)td != null)
+                    {
+                        className = td.type_name;
+                    }
                 }
             }
 
@@ -193,9 +194,42 @@ namespace SyntaxVisitors
             {
                 CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(className);
                 var cu = UpperTo<compilation_unit>();
-                cu.visit(fieldsVis);
-                Console.WriteLine(fieldsVis.CollectedFields);
+                if ((object)cu != null)
+                {
+                    cu.visit(fieldsVis);
+                    // Collect
+                    collectedFields.UnionWith(fieldsVis.CollectedFields);
+                }
             }
+        }
+
+        private void CollectUnitGlobalsNames(procedure_definition pd, ISet<ident> collectedUnitGlobalsName)
+        {
+            var cu = UpperTo<compilation_unit>();
+            if ((object)cu != null)
+            {
+                var ugVis = new CollectUnitGlobalsVisitor();
+                cu.visit(ugVis);
+                // Collect
+                collectedUnitGlobalsName.UnionWith(ugVis.CollectedGlobals);
+            }
+        }
+
+        public override void visit(procedure_definition pd)
+        {
+            // frninja
+            // DEBUG for test 
+            // SORRY
+            
+            // Classification
+            ISet<ident> CollectedLocalsNames = new HashSet<ident>();
+            ISet<ident> CollectedFormalParamsNames = new HashSet<ident>();
+            ISet<ident> CollectedClassFieldsNames = new HashSet<ident>();
+            ISet<ident> CollectedUnitGlobalsNames = new HashSet<ident>();
+
+            ISet<var_def_statement> CollectedLocals = new HashSet<var_def_statement>();
+            ISet<var_def_statement> CollectedFormalParams = new HashSet<var_def_statement>();
+
 
             hasYields = false;
             if (pd.proc_header is function_header)
@@ -212,6 +246,20 @@ namespace SyntaxVisitors
 
             var dld = new DeleteAllLocalDefs(); // mids.vars - все захваченные переменные
             pd.visit(dld); // Удалить в локальных и блочных описаниях этой процедуры все переменные и вынести их в отдельный список var_def_statement
+
+            // frninja 08/12/15
+
+            // Collect locals
+            CollectedLocals.UnionWith(dld.LocalDeletedDefs);
+            CollectedLocalsNames.UnionWith(dld.LocalDeletedDefs.SelectMany(vds => vds.vars.idents));
+            // Collect formal params
+            CollectedFormalParams.UnionWith(pd.proc_header.parameters.params_list.Select(tp => new var_def_statement(tp.idents, tp.vars_type)));
+            CollectedFormalParamsNames.UnionWith(pd.proc_header.parameters.params_list.SelectMany(tp => tp.idents.idents));
+            // Collect class fields
+            CollectClassFieldsNames(pd, CollectedClassFieldsNames);
+            // Collect unit globals
+            CollectUnitGlobalsNames(pd, CollectedUnitGlobalsNames);
+            
 
             mids.vars.Except(dld.LocalDeletedDefsNames); // параметры остались. Их тоже надо исключать - они и так будут обработаны
             // В результате работы в mids.vars что-то осталось. Это не локальные переменные и с ними непонятно что делать

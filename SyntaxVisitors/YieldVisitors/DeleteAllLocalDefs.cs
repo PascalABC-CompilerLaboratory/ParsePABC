@@ -13,7 +13,9 @@ namespace SyntaxVisitors
     {
         public List<var_def_statement> LocalDeletedDefs = new List<var_def_statement>(); // все локальные описания
 
-        public HashSet<string> LocalDeletedDefsNames = new HashSet<string>();            // их имена - для быстрого поиска  
+        public ISet<string> LocalDeletedDefsNames = new HashSet<string>();            // их имена - для быстрого поиска  
+
+        public ISet<ident> CollectedLocals = new HashSet<ident>();
 
         public DeleteAllLocalDefs() // надо запускать этот визитор начиная с корня подпрограммы
         {
@@ -25,6 +27,7 @@ namespace SyntaxVisitors
             DeleteInStatementList(vs);
 
             LocalDeletedDefsNames.UnionWith(vs.var_def.vars.idents.Select(id => id.name));
+            CollectedLocals.UnionWith(vs.var_def.vars.idents);
         }
 
         public override void visit(variable_definitions vd)
