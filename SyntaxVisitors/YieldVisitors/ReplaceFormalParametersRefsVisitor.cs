@@ -44,7 +44,7 @@ namespace SyntaxVisitors
                 foreach (var id in plist.idents.idents)
                 {
                     var paramName = id.name;
-                    var hoistedParamName = HoistParametersHelper.MakeHoistedFormalParameterName(id.name);
+                    var hoistedParamName = CapturedNamesHelper.MakeCapturedFormalParameterName(id.name);
 
                     formalParametersStack[currentLevel].Add(paramName, hoistedParamName);
 

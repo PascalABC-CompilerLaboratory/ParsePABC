@@ -23,22 +23,22 @@ namespace SyntaxVisitors
         public enum ReservedNum { StateField = 1, CurrentField = 2, MethodFormalParam = 3, MethodSelf = 4, MethodLocalVariable = 5 }
     }
 
-    public static class HoistParametersHelper
+    public static class CapturedNamesHelper
     {
         public static int CurrentLocalVariableNum = 0;
 
-        public static string MakeHoistedFormalParameterName(string formalParamName)
+        public static string MakeCapturedFormalParameterName(string formalParamName)
         {
             return string.Format("<>{0}__{1}", Consts.ReservedNum.MethodFormalParam, formalParamName);
         }
 
-        public static string MakeHoistedLocalVariableName(string variableName)
+        public static string MakeCapturedLocalName(string localName)
         {
-            return string.Format("<{0}>{1}__{2}", variableName, Consts.ReservedNum.MethodLocalVariable, ++CurrentLocalVariableNum);
+            return string.Format("<{0}>{1}__{2}", localName, Consts.ReservedNum.MethodLocalVariable, ++CurrentLocalVariableNum);
         }
     }
 
-    public class ProcessYieldCapturedVarsVisitor : BaseChangeVisitor 
+    public class ProcessYieldCapturedVarsVisitor : BaseChangeVisitor
     {
         int clnum = 0;
 
@@ -47,7 +47,7 @@ namespace SyntaxVisitors
             clnum++;
             return "clyield#" + clnum.ToString();
         }
-       
+
         public FindMainIdentsVisitor mids; // захваченные переменные процедуры по всем её yield 
 
         public int countNodesVisited;
@@ -86,7 +86,9 @@ namespace SyntaxVisitors
             base.visit(cm);
         }*/
 
-        type_declarations GenClassesForYield(procedure_definition pd, IEnumerable<var_def_statement> fields)
+        type_declarations GenClassesForYield(procedure_definition pd, IEnumerable<var_def_statement> fields,
+            IDictionary<string, string> localsMap,
+            IDictionary<string, string> formalParamsMap)
         {
             var fh = (pd.proc_header as function_header);
             if (fh == null)
@@ -99,7 +101,13 @@ namespace SyntaxVisitors
 
             // Захваченные переменные
             var cm = class_members.Public;
-            foreach (var m in fields)
+            var capturedFields = fields.Select(vds =>
+                                    {
+                                        ident_list ids = new ident_list(vds.vars.idents.Select(id => new ident(localsMap[id.name])).ToArray());
+                                        return new var_def_statement(ids, vds.vars_type);
+                                    });
+
+            foreach (var m in capturedFields)
                 cm.Add(m);
 
             // Параметры функции
@@ -112,9 +120,12 @@ namespace SyntaxVisitors
                         throw new SyntaxError("Parameters of functions with yields must not have 'var', 'const' or 'params' modifier", "", pars.source_context, pars);
                     if (ps.inital_value != null)
                         throw new SyntaxError("Parameters of functions with yields must not have initial values", "", pars.source_context, pars);
-                    var_def_statement vds = new var_def_statement(ps.idents, ps.vars_type);
+                    //var_def_statement vds = new var_def_statement(ps.idents, ps.vars_type);
+                    ident_list ids = new ident_list(ps.idents.list.Select(id => new ident(formalParamsMap[id.name])).ToArray());
+                    var_def_statement vds = new var_def_statement(ids, ps.vars_type);
                     cm.Add(vds); // все параметры функции делаем полями класса
-                    lid.AddRange(vds.vars.idents);
+                    //lid.AddRange(vds.vars.idents);
+                    lid.AddRange(ps.idents.list);
                 }
 
             var stels = seqt.elements_type;
@@ -138,7 +149,8 @@ namespace SyntaxVisitors
             // Изменение тела процедуры
 
             var stl = new statement_list(new var_statement("res", new new_expr(className)));
-            stl.AddMany(lid.Select(id => new assign(new dot_node("res", id), id)));
+            //stl.AddMany(lid.Select(id => new assign(new dot_node("res", id), id)));
+            stl.AddMany(lid.Select(id => new assign(new dot_node("res", new ident(formalParamsMap[id.name])), id)));
             stl.Add(new assign("Result", "res"));
             pd.proc_body = new block(stl);
 
@@ -168,8 +180,22 @@ namespace SyntaxVisitors
             return cct;
         }
 
-        private void CollectClassFieldsNames(procedure_definition pd, ISet<ident> collectedFields)
+        private void CollectFormalParams(procedure_definition pd, ISet<var_def_statement> collectedFormalParams)
         {
+            if ((object)pd.proc_header.parameters != null)
+                collectedFormalParams.UnionWith(pd.proc_header.parameters.params_list.Select(tp => new var_def_statement(tp.idents, tp.vars_type)));
+        }
+
+        private void CollectFormalParamsNames(procedure_definition pd, ISet<string> collectedFormalParamsNames)
+        {
+            if ((object)pd.proc_header.parameters != null)
+                collectedFormalParamsNames.UnionWith(pd.proc_header.parameters.params_list.SelectMany(tp => tp.idents.idents).Select(id => id.name));
+        }
+
+        private void CollectClassFieldsNames(procedure_definition pd, ISet<string> collectedFields, out bool isInClassMethod)
+        {
+            isInClassMethod = false;
+
             ident className = null;
             if ((object)pd.proc_header.name.class_name != null)
             {
@@ -192,18 +218,20 @@ namespace SyntaxVisitors
 
             if ((object)className != null)
             {
+                isInClassMethod = true;
+
                 CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(className);
                 var cu = UpperTo<compilation_unit>();
                 if ((object)cu != null)
                 {
                     cu.visit(fieldsVis);
                     // Collect
-                    collectedFields.UnionWith(fieldsVis.CollectedFields);
+                    collectedFields.UnionWith(fieldsVis.CollectedFields.Select(id => id.name));
                 }
             }
         }
 
-        private void CollectUnitGlobalsNames(procedure_definition pd, ISet<ident> collectedUnitGlobalsName)
+        private void CollectUnitGlobalsNames(procedure_definition pd, ISet<string> collectedUnitGlobalsName)
         {
             var cu = UpperTo<compilation_unit>();
             if ((object)cu != null)
@@ -211,7 +239,23 @@ namespace SyntaxVisitors
                 var ugVis = new CollectUnitGlobalsVisitor();
                 cu.visit(ugVis);
                 // Collect
-                collectedUnitGlobalsName.UnionWith(ugVis.CollectedGlobals);
+                collectedUnitGlobalsName.UnionWith(ugVis.CollectedGlobals.Select(id => id.name));
+            }
+        }
+
+        private void CreateCapturedLocalsNamesMap(ISet<string> localsNames, IDictionary<string, string> capturedLocalsNamesMap)
+        {
+            foreach (var localName in localsNames)
+            {
+                capturedLocalsNamesMap.Add(localName, CapturedNamesHelper.MakeCapturedLocalName(localName));
+            }
+        }
+
+        private void CreateCapturedFormalParamsNamesMap(ISet<string> formalParamsNames, IDictionary<string, string> captueedFormalParamsNamesMap)
+        {
+            foreach (var formalParamName in formalParamsNames)
+            {
+                captueedFormalParamsNamesMap.Add(formalParamName, CapturedNamesHelper.MakeCapturedFormalParameterName(formalParamName));
             }
         }
 
@@ -220,15 +264,19 @@ namespace SyntaxVisitors
             // frninja
             // DEBUG for test 
             // SORRY
-            
+
             // Classification
-            ISet<ident> CollectedLocalsNames = new HashSet<ident>();
-            ISet<ident> CollectedFormalParamsNames = new HashSet<ident>();
-            ISet<ident> CollectedClassFieldsNames = new HashSet<ident>();
-            ISet<ident> CollectedUnitGlobalsNames = new HashSet<ident>();
+            ISet<string> CollectedLocalsNames = new HashSet<string>();
+            ISet<string> CollectedFormalParamsNames = new HashSet<string>();
+            ISet<string> CollectedClassFieldsNames = new HashSet<string>();
+            ISet<string> CollectedUnitGlobalsNames = new HashSet<string>();
 
             ISet<var_def_statement> CollectedLocals = new HashSet<var_def_statement>();
             ISet<var_def_statement> CollectedFormalParams = new HashSet<var_def_statement>();
+
+            // Map from ident idName -> captured ident idName
+            IDictionary<string, string> CapturedLocalsNamesMap = new Dictionary<string, string>();
+            IDictionary<string, string> CapturedFormalParamsNamesMap = new Dictionary<string, string>();
 
 
             hasYields = false;
@@ -248,18 +296,37 @@ namespace SyntaxVisitors
             pd.visit(dld); // Удалить в локальных и блочных описаниях этой процедуры все переменные и вынести их в отдельный список var_def_statement
 
             // frninja 08/12/15
+            bool isInClassMethod;
 
             // Collect locals
             CollectedLocals.UnionWith(dld.LocalDeletedDefs);
-            CollectedLocalsNames.UnionWith(dld.LocalDeletedDefs.SelectMany(vds => vds.vars.idents));
+            CollectedLocalsNames.UnionWith(dld.LocalDeletedDefs.SelectMany(vds => vds.vars.idents).Select(id => id.name));
             // Collect formal params
-            CollectedFormalParams.UnionWith(pd.proc_header.parameters.params_list.Select(tp => new var_def_statement(tp.idents, tp.vars_type)));
-            CollectedFormalParamsNames.UnionWith(pd.proc_header.parameters.params_list.SelectMany(tp => tp.idents.idents));
+            CollectFormalParams(pd, CollectedFormalParams);
+            CollectFormalParamsNames(pd, CollectedFormalParamsNames);
             // Collect class fields
-            CollectClassFieldsNames(pd, CollectedClassFieldsNames);
+            CollectClassFieldsNames(pd, CollectedClassFieldsNames, out isInClassMethod);
             // Collect unit globals
             CollectUnitGlobalsNames(pd, CollectedUnitGlobalsNames);
-            
+
+            // Create maps :: idName -> captureName
+            CreateCapturedLocalsNamesMap(CollectedLocalsNames, CapturedLocalsNamesMap);
+            CreateCapturedFormalParamsNamesMap(CollectedFormalParamsNames, CapturedFormalParamsNamesMap);
+
+            // AHAHA test!
+            ReplaceCapturedVariablesVisitor rcapVis = new ReplaceCapturedVariablesVisitor(
+                CollectedLocalsNames,
+                CollectedFormalParamsNames,
+                CollectedClassFieldsNames,
+                CollectedUnitGlobalsNames,
+                CapturedLocalsNamesMap,
+                CapturedFormalParamsNamesMap,
+                isInClassMethod
+                );
+            // Replace
+            (pd.proc_body as block).program_code.visit(rcapVis);
+
+
 
             mids.vars.Except(dld.LocalDeletedDefsNames); // параметры остались. Их тоже надо исключать - они и так будут обработаны
             // В результате работы в mids.vars что-то осталось. Это не локальные переменные и с ними непонятно что делать
@@ -272,7 +339,7 @@ namespace SyntaxVisitors
             (pd.proc_body as block).program_code = cfa.res;
 
             // Конструируем определение класса
-            var cct = GenClassesForYield(pd, dld.LocalDeletedDefs); // все удаленные описания переменных делаем описанием класса
+            var cct = GenClassesForYield(pd, dld.LocalDeletedDefs, CapturedLocalsNamesMap, CapturedFormalParamsNamesMap); // все удаленные описания переменных делаем описанием класса
 
             UpperNodeAs<declarations>().InsertBefore(pd, cct);
 
@@ -291,7 +358,7 @@ namespace SyntaxVisitors
             // вначале будем считать, что переменные-поля этого класса и переменные-параметры не захватываются yield
             //base.visit(yn);
 
-            
+
         }
     }
 

@@ -140,7 +140,7 @@ namespace SyntaxVisitors
             var gt1 = goto_statement.New;
             var gt2 = goto_statement.New;
 
-            var if0 = new if_node(un_expr.Not(wn.expr), gt1);
+            var if0 = new if_node(un_expr.Not(wn.expr), new statement_list(gt1));
             var lb2 = new labeled_statement(gt2.label, if0); // continue
             var lb1 = new labeled_statement(gt1.label); // break
 

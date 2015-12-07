@@ -75,6 +75,7 @@
     <Compile Include="YieldVisitors\CollectClassFieldsVisitor.cs" />
     <Compile Include="YieldVisitors\LoweringVisitor.cs" />
     <Compile Include="YieldVisitors\ProcessYieldsCapturedVars.cs" />
+    <Compile Include="YieldVisitors\ReplaceCapturedVariablesVisitor.cs" />
     <Compile Include="YieldVisitors\ReplaceFormalParametersRefsVisitor.cs" />
     <Compile Include="YieldVisitors\ReplaceForVariableVisitor.cs" />
   </ItemGroup>
