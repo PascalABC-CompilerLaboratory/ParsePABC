@@ -104,7 +104,7 @@ namespace SyntaxVisitors
             var capturedFields = fields.Select(vds =>
                                     {
                                         ident_list ids = new ident_list(vds.vars.idents.Select(id => new ident(localsMap[id.name])).ToArray());
-                                        return new var_def_statement(ids, vds.vars_type);
+                                        return new var_def_statement(ids, vds.vars_type, vds.inital_value);
                                     });
 
             foreach (var m in capturedFields)

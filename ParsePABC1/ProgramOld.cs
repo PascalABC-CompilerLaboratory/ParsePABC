@@ -40,7 +40,7 @@ namespace ParsePABC1
 
         static void Main(string[] args)
         {
-            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\_ParsePABC1\tests\yield7.pas");
+            var cu = ParseFile(@"C:\Users\Oleg\Documents\Visual Studio 2015\Projects\C#\Compilers\_ParsePABC1\tests\yield2.pas");
             if (cu == null)
                 return;
 
@@ -54,8 +54,8 @@ namespace ParsePABC1
             //cu.visit(ugVis);
             //Console.WriteLine(ugVis.CollectedGlobals);
 
-            JustTestVisitor jtVis = new JustTestVisitor();
-            cu.visit(jtVis);
+            //JustTestVisitor jtVis = new JustTestVisitor();
+            //cu.visit(jtVis);
 
             var yieldVis = new ProcessYieldCapturedVarsVisitor();
             cu.visit(yieldVis);

@@ -70,7 +70,7 @@ namespace SyntaxVisitors
             ProcessNode(ifn.then_body);
             ProcessNode(ifn.else_body);
 
-            var b = true;//HasStatementVisitor<yield_node>.Has(ifn);
+            var b = HasStatementVisitor<yield_node>.Has(ifn);
             if (!b)
                 return;
 
@@ -80,6 +80,7 @@ namespace SyntaxVisitors
             if ((object)ifn.else_body == null)
             {
                 var if0 = new if_node(un_expr.Not(ifn.condition), gtAfter);
+                //Replace(ifn, SeqStatements(if0, ifn.then_body, lbAfter));
                 ReplaceStatement(ifn, SeqStatements(if0, ifn.then_body, lbAfter));
 
                 // в declarations ближайшего блока добавить описание labels
@@ -140,7 +141,7 @@ namespace SyntaxVisitors
             var gt1 = goto_statement.New;
             var gt2 = goto_statement.New;
 
-            var if0 = new if_node(un_expr.Not(wn.expr), new statement_list(gt1));
+            var if0 = new if_node(un_expr.Not(wn.expr), gt1);
             var lb2 = new labeled_statement(gt2.label, if0); // continue
             var lb1 = new labeled_statement(gt1.label); // break
 

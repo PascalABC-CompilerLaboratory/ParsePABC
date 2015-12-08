@@ -2,6 +2,8 @@ var a: real := 555.0;
 
 type A = class
   testField: real;
+  n: real;
+
   function Gen(n: integer): sequence of real;
   var j,k: real;
   begin
@@ -10,6 +12,7 @@ type A = class
     result := j;
     result := a;
     result := testField;
+    result := self.n;
   end;
 end;
 
