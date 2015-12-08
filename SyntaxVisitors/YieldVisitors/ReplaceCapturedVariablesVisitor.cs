@@ -102,6 +102,16 @@ namespace SyntaxVisitors
                     // Not in class method -> just do nothing, that is global! =)
                 }
             }
+            else
+            {
+                // Not in globals
+                if (IsInClassMethod && ! CollectedClassFields.Contains(idName))
+                {
+                    // BAAAAD
+                    // At syntax we don't know if the name is class field or not coz of e.g. base .NET classes
+                    // HERE WE SHOULD REPLACE TO yield_unknown_reference -> so decision is passed to semantic 
+                }
+            }
         }
 
         public override void visit(dot_node dn)
@@ -110,8 +120,13 @@ namespace SyntaxVisitors
             var id = dn.left as ident;
             if ((object)id != null && id.name == "self")
             {
-                var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
-                Replace(dn.left, capturedSelf);
+                // Some magic for blocking back-traverse from BaseChangeVisitor redoin' work
+                var rid = dn.right as ident;
+                if ((object)rid != null && rid.name != Consts.Self)
+                {
+                    var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
+                    Replace(dn.left, capturedSelf);
+                }
             }
             else
             {

@@ -73,6 +73,7 @@
     <Compile Include="YieldVisitors\DeleteAllLocalDefs.cs" />
     <Compile Include="YieldVisitors\DeleteLocalDefs.cs" />
     <Compile Include="YieldVisitors\CollectClassFieldsVisitor.cs" />
+    <Compile Include="YieldVisitors\JustTestVisitor.cs" />
     <Compile Include="YieldVisitors\LoweringVisitor.cs" />
     <Compile Include="YieldVisitors\ProcessYieldsCapturedVars.cs" />
     <Compile Include="YieldVisitors\ReplaceCapturedVariablesVisitor.cs" />
