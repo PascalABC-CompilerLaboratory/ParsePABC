@@ -140,6 +140,11 @@ namespace SyntaxVisitors
                 new procedure_definition("GetEnumerator", "System.Collections.IEnumerator", new assign("Result", "Self"))
                 );
 
+            
+            // frninja 08/18/15 - Для захвата self
+            if ((object)GetClassName(pd) != null)
+                cm.Add(new var_def_statement(Consts.Self, GetClassName(pd).name));
+
             var className = newClassName();
             var classNameHelper = className + "Helper";
 
@@ -151,6 +156,10 @@ namespace SyntaxVisitors
             var stl = new statement_list(new var_statement("res", new new_expr(className)));
             //stl.AddMany(lid.Select(id => new assign(new dot_node("res", id), id)));
             stl.AddMany(lid.Select(id => new assign(new dot_node("res", new ident(formalParamsMap[id.name])), id)));
+
+            // frninja 08/12/15 - захват self
+            stl.Add(new assign(new dot_node("res", Consts.Self), new ident("self")));
+
             stl.Add(new assign("Result", "res"));
             pd.proc_body = new block(stl);
 
@@ -192,15 +201,12 @@ namespace SyntaxVisitors
                 collectedFormalParamsNames.UnionWith(pd.proc_header.parameters.params_list.SelectMany(tp => tp.idents.idents).Select(id => id.name));
         }
 
-        private void CollectClassFieldsNames(procedure_definition pd, ISet<string> collectedFields, out bool isInClassMethod)
+        private ident GetClassName(procedure_definition pd)
         {
-            isInClassMethod = false;
-
-            ident className = null;
             if ((object)pd.proc_header.name.class_name != null)
             {
                 // Объявление вне класса его метода
-                className = pd.proc_header.name.class_name;
+                return pd.proc_header.name.class_name;
             }
             else
             {
@@ -211,10 +217,19 @@ namespace SyntaxVisitors
                     var td = UpperNode(4) as type_declaration;
                     if ((object)td != null)
                     {
-                        className = td.type_name;
+                        return td.type_name;
                     }
                 }
             }
+
+            return null;
+        }
+
+        private void CollectClassFieldsNames(procedure_definition pd, ISet<string> collectedFields, out bool isInClassMethod)
+        {
+            isInClassMethod = false;
+
+            ident className = GetClassName(pd);
 
             if ((object)className != null)
             {
@@ -341,7 +356,25 @@ namespace SyntaxVisitors
             // Конструируем определение класса
             var cct = GenClassesForYield(pd, dld.LocalDeletedDefs, CapturedLocalsNamesMap, CapturedFormalParamsNamesMap); // все удаленные описания переменных делаем описанием класса
 
-            UpperNodeAs<declarations>().InsertBefore(pd, cct);
+            //UpperNodeAs<declarations>().InsertBefore(pd, cct);
+            if (isInClassMethod)
+            {
+                var cd = UpperTo<class_definition>();
+                if ((object)cd != null)
+                {
+                    var td = UpperTo<type_declarations>();
+                    // Insert class predefenition!
+                    var predef = new type_declarations(new type_declaration(GetClassName(pd), new class_definition(null)));
+
+                    UpperTo<declarations>().InsertBefore(td, predef);
+
+                    UpperTo<declarations>().InsertAfter(predef, cct);
+                }
+            }
+            else 
+            {
+                UpperTo<declarations>().InsertBefore(pd, cct);
+            }
 
             mids = null; // вдруг мы выйдем из процедуры, не зайдем в другую, а там - оператор! Такого конечно не может быть
         }

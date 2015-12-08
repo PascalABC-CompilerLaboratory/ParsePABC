@@ -1,4 +1,4 @@
-var a: real := 555.0;
+var aa: real := 555.0;
 
 type A = class
   testField: real;
@@ -8,11 +8,11 @@ type A = class
   var j,k: real;
   begin
     j := 777.0;
-    result := n;
-    result := j;
-    result := a;
-    result := testField;
-    result := self.n;
+    yield n;
+    yield j;
+    yield aa;
+    yield testField;
+    yield self.n;
   end;
 end;
 

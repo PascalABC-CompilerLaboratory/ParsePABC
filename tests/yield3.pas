@@ -11,6 +11,6 @@ begin
 end;
 
 begin
-  foreach var x in Gen(5) do
+  foreach var x in Gen(10) do
     Print(x);
 end.

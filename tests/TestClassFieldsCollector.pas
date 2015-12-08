@@ -1,4 +1,6 @@
-type A = class
+type 
+A = class;
+A = class
   field1: integer;
   field2: integer;
   
