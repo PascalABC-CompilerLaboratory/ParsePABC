@@ -130,6 +130,10 @@ namespace SyntaxVisitors
 
             var stels = seqt.elements_type;
 
+            // frninja 08/18/15 - Для захвата self
+            if ((object)GetClassName(pd) != null)
+                cm.Add(new var_def_statement(Consts.Self, GetClassName(pd).name));
+
             // Системные поля и методы для реализации интерфейса IEnumerable
             cm.Add(new var_def_statement(Consts.State, "integer"),
                 new var_def_statement(Consts.Current, stels),
@@ -141,9 +145,7 @@ namespace SyntaxVisitors
                 );
 
             
-            // frninja 08/18/15 - Для захвата self
-            if ((object)GetClassName(pd) != null)
-                cm.Add(new var_def_statement(Consts.Self, GetClassName(pd).name));
+            
 
             var className = newClassName();
             var classNameHelper = className + "Helper";
@@ -158,7 +160,8 @@ namespace SyntaxVisitors
             stl.AddMany(lid.Select(id => new assign(new dot_node("res", new ident(formalParamsMap[id.name])), id)));
 
             // frninja 08/12/15 - захват self
-            stl.Add(new assign(new dot_node("res", Consts.Self), new ident("self")));
+            if ((object)GetClassName(pd) != null)
+                stl.Add(new assign(new dot_node("res", Consts.Self), new ident("self")));
 
             stl.Add(new assign("Result", "res"));
             pd.proc_body = new block(stl);
@@ -366,9 +369,16 @@ namespace SyntaxVisitors
                     // Insert class predefenition!
                     var predef = new type_declarations(new type_declaration(GetClassName(pd), new class_definition(null)));
 
-                    UpperTo<declarations>().InsertBefore(td, predef);
+                    //UpperTo<declarations>().InsertBefore(td, predef);
 
-                    UpperTo<declarations>().InsertAfter(predef, cct);
+                    foreach (var helperName in cct.types_decl.Select(ttd => ttd.type_name))
+                    {
+                        var helperPredef = new type_declaration(helperName, new class_definition());
+                        td.types_decl.Insert(0, helperPredef);
+                    }
+
+                    //UpperTo<declarations>().InsertAfter(predef, cct);
+                    UpperTo<declarations>().InsertAfter(td, cct);
                 }
             }
             else 
