@@ -40,17 +40,26 @@ namespace SyntaxVisitors
             CapturedFormalParamsMap = new Dictionary<string, string>(formalParamsMap);
 
             IsInClassMethod = isInClassMethod;
+
+            // Self hack
+            //CollectedClassFields.Add("self");
         }
 
         public override void visit(ident id)
         {
             // Check dot node
             var upper = UpperNode(1);
-            if (upper is dot_node)
-                return;
+            //if (upper is dot_node)
+            //    return;
 
             var idName = id.name;
             var idSourceContext = id.source_context;
+
+            if (idName == "self")
+            {
+                var newSelf = new dot_node(new ident("self"), new ident(Consts.Self));
+                Replace(id, newSelf);
+            }
 
             // Detect where is id from
             if (CollectedLocals.Contains(idName))
@@ -97,13 +106,21 @@ namespace SyntaxVisitors
 
         public override void visit(dot_node dn)
         {
+            var rid = dn.right as ident;
+            if ((object)rid != null && rid.name != Consts.Self)
+                ProcessNode(dn.left);
+
+            // Most nested
+            // DotNode (DLeft, DRight) -> DotNode(DotNode("self", "<>__self"), DRight)
+
+
             // LEFT self -> captured self (self.captured_self)
-            var id = dn.left as ident;
-            if ((object)id != null && id.name == "self")
+            /*var id = dn.left as ident;
+            if ((object)id != null && (id.name == "self" || CollectedClassFields.Contains(id.name)))
             {
                 // Some magic for blocking back-traverse from BaseChangeVisitor redoin' work
-                var rid = dn.right as ident;
-                if ((object)rid != null && rid.name != Consts.Self)
+                //var rid = dn.right as ident;
+                //if ((object)rid != null && rid.name != Consts.Self)
                 {
                     var newDotNode = new dot_node(new dot_node(new ident("self"), new ident(Consts.Self)), dn.right);
                     // Change right?
@@ -124,10 +141,10 @@ namespace SyntaxVisitors
             else
             {
                 ProcessNode(dn.left);
-            }
+            }*/
 
-            if (dn.right.GetType() != typeof(ident))
-                ProcessNode(dn.right);
+            //if (dn.right.GetType() != typeof(ident))
+            //    ProcessNode(dn.right);
         }
     }
 }
