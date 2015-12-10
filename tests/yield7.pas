@@ -10,6 +10,8 @@ type A = class
   n: real := 83.3;
   testF: A;
 
+  property testProp: real read n;
+
   constructor Create;
   begin
     testF := self;
@@ -24,7 +26,7 @@ type A = class
   var j,k: real;
   begin
     j := 777.0;
-    p1(j + k);
+    p1(j + k + testProp);
     testField := 444.5;
     testF.testF.testF.testF.testField := 663.4;
     yield n;

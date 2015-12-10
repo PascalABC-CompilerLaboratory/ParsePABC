@@ -135,6 +135,7 @@ namespace SyntaxVisitors
                 CollectedFormalParamsNames,
                 CollectedClassFieldsNames,
                 new HashSet<string>(),
+                new HashSet<string>(),
                 CollectedUnitGlobalsNames,
                 CapturedLocalsNamesMap,
                 CapturedFormalParamsNamesMap,

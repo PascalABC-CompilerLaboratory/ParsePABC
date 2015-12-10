@@ -255,16 +255,17 @@ namespace SyntaxVisitors
             return null;
         }
 
-        private void CollectClassFieldsNames(procedure_definition pd, ISet<string> collectedFields, out bool isInClassMethod)
+        private bool IsClassMethod(procedure_definition pd)
         {
-            isInClassMethod = false;
+            return (object)GetClassName(pd) != null;
+        }
 
+        private void CollectClassFieldsNames(procedure_definition pd, ISet<string> collectedFields)
+        {
             ident className = GetClassName(pd);
 
             if ((object)className != null)
             {
-                isInClassMethod = true;
-
                 CollectClassFieldsVisitor fieldsVis = new CollectClassFieldsVisitor(className);
                 var cu = UpperTo<compilation_unit>();
                 if ((object)cu != null)
@@ -289,6 +290,23 @@ namespace SyntaxVisitors
                     cu.visit(methodsVis);
                     // Collect
                     collectedMethods.UnionWith(methodsVis.CollectedMethods.Select(id => id.name));
+                }
+            }
+        }
+
+        private void CollectClassPropertiesNames(procedure_definition pd, ISet<string> collectedProperties)
+        {
+            ident className = GetClassName(pd);
+
+            if ((object)className != null)
+            {
+                CollectClassPropertiesVisitor propertiesVis = new CollectClassPropertiesVisitor(className);
+                var cu = UpperTo<compilation_unit>();
+                if ((object)cu != null)
+                {
+                    cu.visit(propertiesVis);
+                    // Collect
+                    collectedProperties.UnionWith(propertiesVis.CollectedProperties.Select(id => id.name));
                 }
             }
         }
@@ -332,6 +350,7 @@ namespace SyntaxVisitors
             ISet<string> CollectedFormalParamsNames = new HashSet<string>();
             ISet<string> CollectedClassFieldsNames = new HashSet<string>();
             ISet<string> CollectedClassMethodsNames = new HashSet<string>();
+            ISet<string> CollectedClassPropertiesNames = new HashSet<string>();
             ISet<string> CollectedUnitGlobalsNames = new HashSet<string>();
 
             ISet<var_def_statement> CollectedLocals = new HashSet<var_def_statement>();
@@ -359,7 +378,7 @@ namespace SyntaxVisitors
             pd.visit(dld); // Удалить в локальных и блочных описаниях этой процедуры все переменные и вынести их в отдельный список var_def_statement
 
             // frninja 08/12/15
-            bool isInClassMethod;
+            bool isClassMethod = IsClassMethod(pd);
 
             // Collect locals
             CollectedLocals.UnionWith(dld.LocalDeletedDefs);
@@ -368,9 +387,11 @@ namespace SyntaxVisitors
             CollectFormalParams(pd, CollectedFormalParams);
             CollectFormalParamsNames(pd, CollectedFormalParamsNames);
             // Collect class fields
-            CollectClassFieldsNames(pd, CollectedClassFieldsNames, out isInClassMethod);
+            CollectClassFieldsNames(pd, CollectedClassFieldsNames);
             // Collect class methods
             CollectClassMethodsNames(pd, CollectedClassMethodsNames);
+            // Collect class properties
+            CollectClassPropertiesNames(pd, CollectedClassPropertiesNames);
             // Collect unit globals
             CollectUnitGlobalsNames(pd, CollectedUnitGlobalsNames);
             
@@ -385,10 +406,11 @@ namespace SyntaxVisitors
                 CollectedFormalParamsNames,
                 CollectedClassFieldsNames,
                 CollectedClassMethodsNames,
+                CollectedClassPropertiesNames,
                 CollectedUnitGlobalsNames,
                 CapturedLocalsNamesMap,
                 CapturedFormalParamsNamesMap,
-                isInClassMethod
+                isClassMethod
                 );
             // Replace
             (pd.proc_body as block).program_code.visit(rcapVis);
@@ -409,7 +431,7 @@ namespace SyntaxVisitors
             var cct = GenClassesForYield(pd, dld.LocalDeletedDefs, CapturedLocalsNamesMap, CapturedFormalParamsNamesMap); // все удаленные описания переменных делаем описанием класса
 
             //UpperNodeAs<declarations>().InsertBefore(pd, cct);
-            if (isInClassMethod)
+            if (isClassMethod)
             {
                 var cd = UpperTo<class_definition>();
                 if ((object)cd != null)

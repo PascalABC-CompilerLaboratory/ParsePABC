@@ -27,6 +27,7 @@ namespace SyntaxVisitors
             IEnumerable<string> formalParams,
             IEnumerable<string> classFields,
             IEnumerable<string> classMethods,
+            IEnumerable<string> classProperties,
             IEnumerable<string> unitGlobals,
             IDictionary<string, string> localsMap,
             IDictionary<string, string> formalParamsMap,
@@ -44,6 +45,8 @@ namespace SyntaxVisitors
 
             // Methods hack
             CollectedClassFields.UnionWith(classMethods);
+            // Properties hack
+            CollectedClassFields.UnionWith(classProperties);
 
         }
 
@@ -108,7 +111,7 @@ namespace SyntaxVisitors
         }
 
 
-        public override void visit(procedure_call pc)
+        /*public override void visit(procedure_call pc)
         {
             ProcessNode(pc.func_name);
             var methCall = pc.func_name as method_call;
@@ -119,7 +122,7 @@ namespace SyntaxVisitors
                     param.visit(this);
                 }
             }
-        }
+        }*/
 
         public override void visit(dot_node dn)
         {

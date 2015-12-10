@@ -70,6 +70,7 @@
     <Compile Include="UniversalVisitors\DeleteRedundantBeginEnds.cs" />
     <Compile Include="UniversalVisitors\SimplePrettyPrinterVisitor.cs" />
     <Compile Include="YieldVisitors\CollectClassMethodsVisitor.cs" />
+    <Compile Include="YieldVisitors\CollectClassPropertiesVisitor.cs" />
     <Compile Include="YieldVisitors\CollectUnitGlobalsVisitor.cs" />
     <Compile Include="YieldVisitors\DeleteAllLocalDefs.cs" />
     <Compile Include="YieldVisitors\DeleteLocalDefs.cs" />
