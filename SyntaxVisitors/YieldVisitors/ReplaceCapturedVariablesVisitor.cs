@@ -61,55 +61,35 @@ namespace SyntaxVisitors
             {
                 Replace(id, new ident(CapturedFormalParamsMap[idName], idSourceContext));
             }
-            else if (IsInClassMethod && CollectedClassFields.Contains(idName))
+            else if (IsInClassMethod)
             {
-                // Check in globals
-                if (CollectedUnitGlobals.Contains(idName))
+                // In class -> check fields
+                if (CollectedClassFields.Contains(idName))
                 {
-                    // Not bad!
-                    // Name in class fields && in globals -> capture as class field
+                    // Good 
+                    // Name in class fields -> capture as class field
                     var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
                     var capturedId = new dot_node(capturedSelf, id);
                     Replace(id, capturedId);
                 }
                 else
                 {
-                    // Good! 
-                    // No name in globals && name in class fields -> capture as class field
-                    var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
-                    var capturedId = new dot_node(capturedSelf, id);
-                    Replace(id, capturedId);
-                }
-            }
-            else if (CollectedUnitGlobals.Contains(idName))
-            {
-                if (IsInClassMethod && CollectedClassFields.Contains(idName))
-                {
-                    // Not bad!
-                    // Name in class fields && in globals -> capture as class field
-                    var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
-                    var capturedId = new dot_node(capturedSelf, id);
-                    Replace(id, capturedId);
-                }
-                else if (IsInClassMethod)
-                {
-                    // BAAAAD
+                    // Bad
                     // At syntax we don't know if the name is class field or not coz of e.g. base .NET classes
                     // HERE WE SHOULD REPLACE TO yield_unknown_reference -> so decision is passed to semantic 
-                }
-                else
-                {
-                    // Not in class method -> just do nothing, that is global! =)
+                    // Check for globals will be processed at semantic, too
                 }
             }
             else
             {
-                // Not in globals
-                if (IsInClassMethod && ! CollectedClassFields.Contains(idName))
+                // Not in class -> check globals
+                if (CollectedUnitGlobals.Contains(idName))
                 {
-                    // BAAAAD
-                    // At syntax we don't know if the name is class field or not coz of e.g. base .NET classes
-                    // HERE WE SHOULD REPLACE TO yield_unknown_reference -> so decision is passed to semantic 
+                    // Global -> just do nothing
+                }
+                else
+                {
+                    // Error, unknown name!
                 }
             }
         }

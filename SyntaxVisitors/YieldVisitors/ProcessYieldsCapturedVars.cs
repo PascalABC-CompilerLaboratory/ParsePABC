@@ -367,7 +367,7 @@ namespace SyntaxVisitors
                 {
                     var td = UpperTo<type_declarations>();
                     // Insert class predefenition!
-                    var predef = new type_declarations(new type_declaration(GetClassName(pd), new class_definition(null)));
+                    //var predef = new type_declarations(new type_declaration(GetClassName(pd), new class_definition(null)));
 
                     //UpperTo<declarations>().InsertBefore(td, predef);
 
@@ -377,8 +377,12 @@ namespace SyntaxVisitors
                         td.types_decl.Insert(0, helperPredef);
                     }
 
-                    //UpperTo<declarations>().InsertAfter(predef, cct);
-                    UpperTo<declarations>().InsertAfter(td, cct);
+                    foreach (var helper in cct.types_decl)
+                    {
+                        td.types_decl.Add(helper);
+                    }
+
+                    //UpperTo<declarations>().InsertAfter(td, cct);
                 }
             }
             else 
