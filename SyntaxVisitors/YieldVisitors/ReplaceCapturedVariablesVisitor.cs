@@ -26,6 +26,7 @@ namespace SyntaxVisitors
         public ReplaceCapturedVariablesVisitor(IEnumerable<string> locals,
             IEnumerable<string> formalParams,
             IEnumerable<string> classFields,
+            IEnumerable<string> classMethods,
             IEnumerable<string> unitGlobals,
             IDictionary<string, string> localsMap,
             IDictionary<string, string> formalParamsMap,
@@ -41,8 +42,9 @@ namespace SyntaxVisitors
 
             IsInClassMethod = isInClassMethod;
 
-            // Self hack
-            //CollectedClassFields.Add("self");
+            // Methods hack
+            CollectedClassFields.UnionWith(classMethods);
+
         }
 
         public override void visit(ident id)
@@ -99,8 +101,22 @@ namespace SyntaxVisitors
                 }
                 else
                 {
-                    // Error, unknown name!
                     // What about static classes - search at semantic
+                    // HERE WE SHOULD REPLACE TO yield_unknown_reference -> so decision is passed to semantic 
+                }
+            }
+        }
+
+
+        public override void visit(procedure_call pc)
+        {
+            ProcessNode(pc.func_name);
+            var methCall = pc.func_name as method_call;
+            if ((object)methCall != null)
+            {
+                foreach (var param in methCall.parameters.expressions)
+                {
+                    param.visit(this);
                 }
             }
         }

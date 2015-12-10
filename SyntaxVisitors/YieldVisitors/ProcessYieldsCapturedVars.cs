@@ -276,6 +276,23 @@ namespace SyntaxVisitors
             }
         }
 
+        private void CollectClassMethodsNames(procedure_definition pd, ISet<string> collectedMethods)
+        {
+            ident className = GetClassName(pd);
+
+            if ((object)className != null)
+            {
+                CollectClassMethodsVisitor methodsVis = new CollectClassMethodsVisitor(className);
+                var cu = UpperTo<compilation_unit>();
+                if ((object)cu != null)
+                {
+                    cu.visit(methodsVis);
+                    // Collect
+                    collectedMethods.UnionWith(methodsVis.CollectedMethods.Select(id => id.name));
+                }
+            }
+        }
+
         private void CollectUnitGlobalsNames(procedure_definition pd, ISet<string> collectedUnitGlobalsName)
         {
             var cu = UpperTo<compilation_unit>();
@@ -314,6 +331,7 @@ namespace SyntaxVisitors
             ISet<string> CollectedLocalsNames = new HashSet<string>();
             ISet<string> CollectedFormalParamsNames = new HashSet<string>();
             ISet<string> CollectedClassFieldsNames = new HashSet<string>();
+            ISet<string> CollectedClassMethodsNames = new HashSet<string>();
             ISet<string> CollectedUnitGlobalsNames = new HashSet<string>();
 
             ISet<var_def_statement> CollectedLocals = new HashSet<var_def_statement>();
@@ -351,8 +369,11 @@ namespace SyntaxVisitors
             CollectFormalParamsNames(pd, CollectedFormalParamsNames);
             // Collect class fields
             CollectClassFieldsNames(pd, CollectedClassFieldsNames, out isInClassMethod);
+            // Collect class methods
+            CollectClassMethodsNames(pd, CollectedClassMethodsNames);
             // Collect unit globals
             CollectUnitGlobalsNames(pd, CollectedUnitGlobalsNames);
+            
 
             // Create maps :: idName -> captureName
             CreateCapturedLocalsNamesMap(CollectedLocalsNames, CapturedLocalsNamesMap);
@@ -363,6 +384,7 @@ namespace SyntaxVisitors
                 CollectedLocalsNames,
                 CollectedFormalParamsNames,
                 CollectedClassFieldsNames,
+                CollectedClassMethodsNames,
                 CollectedUnitGlobalsNames,
                 CapturedLocalsNamesMap,
                 CapturedFormalParamsNamesMap,

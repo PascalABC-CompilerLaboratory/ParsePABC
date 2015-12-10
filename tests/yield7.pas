@@ -15,10 +15,16 @@ type A = class
     testF := self;
   end;
 
+  procedure p1(r: real);
+  begin
+    n += r;
+  end;
+
   function Gen(n: integer): sequence of real;
   var j,k: real;
   begin
     j := 777.0;
+    p1(j + k);
     testField := 444.5;
     testF.testF.testF.testF.testField := 663.4;
     yield n;

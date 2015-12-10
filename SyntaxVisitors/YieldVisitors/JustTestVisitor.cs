@@ -121,6 +121,7 @@ namespace SyntaxVisitors
             CollectFormalParamsNames(pd, CollectedFormalParamsNames);
             // Collect class fields
             CollectClassFieldsNames(pd, CollectedClassFieldsNames, out isInClassMethod);
+            
             // Collect unit globals
             CollectUnitGlobalsNames(pd, CollectedUnitGlobalsNames);
 
@@ -133,6 +134,7 @@ namespace SyntaxVisitors
                 CollectedLocalsNames,
                 CollectedFormalParamsNames,
                 CollectedClassFieldsNames,
+                new HashSet<string>(),
                 CollectedUnitGlobalsNames,
                 CapturedLocalsNamesMap,
                 CapturedFormalParamsNamesMap,
