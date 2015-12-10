@@ -68,8 +68,9 @@ namespace SyntaxVisitors
                 {
                     // Good 
                     // Name in class fields -> capture as class field
-                    var capturedSelf = new dot_node(new ident("self"), new ident(Consts.Self));
-                    var capturedId = new dot_node(capturedSelf, id);
+
+
+                    var capturedId = new dot_node(new dot_node(new ident("self"), new ident(Consts.Self)), id);
                     Replace(id, capturedId);
                 }
                 else
@@ -104,9 +105,10 @@ namespace SyntaxVisitors
                 var rid = dn.right as ident;
                 if ((object)rid != null && rid.name != Consts.Self)
                 {
+                    var newDotNode = new dot_node(new dot_node(new ident("self"), new ident(Consts.Self)), dn.right);
                     // Change right?
-                    var capturedRight = new dot_node(new ident(Consts.Self), dn.right);
-                    var newDotNode = new dot_node(dn.left, capturedRight);
+                    //var capturedRight = new dot_node(new ident(Consts.Self), dn.right);
+                    //var newDotNode = new dot_node(dn.left, capturedRight);
                     Replace(dn, newDotNode);
                 }
                 

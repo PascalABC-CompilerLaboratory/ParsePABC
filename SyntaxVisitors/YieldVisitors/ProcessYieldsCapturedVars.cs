@@ -154,6 +154,7 @@ namespace SyntaxVisitors
             var td = new type_declaration(classNameHelper, SyntaxTreeBuilder.BuildClassDefinition(interfaces, cm));
 
             // Изменение тела процедуры
+            
 
             var stl = new statement_list(new var_statement("res", new new_expr(className)));
             //stl.AddMany(lid.Select(id => new assign(new dot_node("res", id), id)));
@@ -164,7 +165,33 @@ namespace SyntaxVisitors
                 stl.Add(new assign(new dot_node("res", Consts.Self), new ident("self")));
 
             stl.Add(new assign("Result", "res"));
+
+            // New body
             pd.proc_body = new block(stl);
+
+            if ((object)GetClassName(pd) != null)
+            {
+                // frninja 10/12/15 - заменить на function_header и перенести описание тела в declarations
+                Replace(pd, fh);
+                var decls = UpperTo<declarations>();
+                if ((object)decls != null)
+                {
+                    function_header nfh = new function_header();
+                    nfh.name = new method_name(fh.name.meth_name.name);
+                    // Set name
+                    nfh.name.class_name = GetClassName(pd);
+                    nfh.parameters = fh.parameters;
+                    nfh.proc_attributes = fh.proc_attributes;
+
+                    
+                    procedure_definition npd = new procedure_definition(nfh, new block(stl));
+                    
+                    // Update header
+                    //pd.proc_header.name.class_name = GetClassName(pd);
+                    // Add to decls
+                    decls.Add(npd);
+                }
+            }
 
             // Второй класс
 
@@ -367,9 +394,8 @@ namespace SyntaxVisitors
                 {
                     var td = UpperTo<type_declarations>();
                     // Insert class predefenition!
-                    //var predef = new type_declarations(new type_declaration(GetClassName(pd), new class_definition(null)));
-
-                    //UpperTo<declarations>().InsertBefore(td, predef);
+                    var iteratorClassPredef = new type_declaration(GetClassName(pd), new class_definition(null));
+                    td.types_decl.Insert(0, iteratorClassPredef);
 
                     foreach (var helperName in cct.types_decl.Select(ttd => ttd.type_name))
                     {
