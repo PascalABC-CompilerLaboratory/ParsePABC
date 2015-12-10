@@ -55,7 +55,7 @@ namespace SyntaxVisitors
             var idName = id.name;
             var idSourceContext = id.source_context;
 
-            if (idName == "self")
+            if (idName.ToLower() == "self")
             {
                 var newSelf = new dot_node(new ident("self"), new ident(Consts.Self));
                 Replace(id, newSelf);
@@ -100,6 +100,7 @@ namespace SyntaxVisitors
                 else
                 {
                     // Error, unknown name!
+                    // What about static classes - search at semantic
                 }
             }
         }
