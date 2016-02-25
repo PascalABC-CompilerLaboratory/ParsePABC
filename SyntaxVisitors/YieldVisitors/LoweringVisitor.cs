@@ -178,7 +178,7 @@ namespace SyntaxVisitors
 
             //var ass1 = new var_statement(fn.loop_variable, fn.type_name, fn.initial_value);
             var ass1 = new var_statement(fn.loop_variable, fn.type_name, fn.initial_value);
-            var ass2 = new var_statement(endtemp, fn.type_name, fn.finish_value);
+            //var ass2 = new var_statement(endtemp, fn.type_name, fn.finish_value);
 
 
 
@@ -192,7 +192,7 @@ namespace SyntaxVisitors
                 new ident("Inc") :
                 new ident("Dec"), new expression_list(fn.loop_variable)));
 
-            ReplaceStatement(fn, SeqStatements(ass1, ass2, lb2, fn.statements, Inc, gt2, lb1));
+            ReplaceStatement(fn, SeqStatements(ass1, /*ass2,*/ lb2, fn.statements, Inc, gt2, lb1));
 
             // в declarations ближайшего блока добавить описание labels
             block bl = listNodes.FindLast(x => x is block) as block;

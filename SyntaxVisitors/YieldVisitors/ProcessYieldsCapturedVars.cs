@@ -416,7 +416,6 @@ namespace SyntaxVisitors
             (pd.proc_body as block).program_code.visit(rcapVis);
 
 
-
             mids.vars.Except(dld.LocalDeletedDefsNames); // параметры остались. Их тоже надо исключать - они и так будут обработаны
             // В результате работы в mids.vars что-то осталось. Это не локальные переменные и с ними непонятно что делать
 
